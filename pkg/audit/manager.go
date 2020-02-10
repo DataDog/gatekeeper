@@ -158,14 +158,14 @@ func (am *Manager) audit(ctx context.Context) error {
 	}
 	for k, v := range totalViolationsPerEnforcementAction {
 		if err := am.reporter.reportTotalViolations(k, v); err != nil {
-			am.log.Error(err, "failed to report total violations")
+			log.Error(err, "failed to report total violations")
 		}
 	}
 	// get all constraint kinds
 	rs, err := am.getAllConstraintKinds()
 	if err != nil {
 		// if no constraint is found with the constraint apiversion, then return
-		am.log.Info("no constraint is found with apiversion", "constraint apiversion", constraintsGV)
+		log.Info("no constraint is found with apiversion", "constraint apiversion", constraintsGV)
 		return nil
 	}
 	// update constraints for each kind
@@ -302,6 +302,7 @@ func (am *Manager) getUpdateListsFromAuditResponses(res []*constraintTypes.Resul
 	updateLists := make(map[string][]auditResult)
 	totalViolationsPerConstraint := make(map[string]int64)
 	totalViolationsPerEnforcementAction := make(map[util.EnforcementAction]int64)
+
 	// resetting total violations per enforcement action
 	for _, action := range util.KnownEnforcementActions {
 		totalViolationsPerEnforcementAction[action] = 0
@@ -309,6 +310,14 @@ func (am *Manager) getUpdateListsFromAuditResponses(res []*constraintTypes.Resul
 
 	for _, r := range res {
 		selfLink := r.Constraint.GetSelfLink()
+		constraintNameSplit := strings.Split(selfLink,"/")
+		var constraintName string
+		if len(constraintNameSplit) > 3 {
+			constraintName = strings.Join(constraintNameSplit[4:], "_")
+		} else {
+			constraintName = selfLink
+		}
+
 		totalViolationsPerConstraint[selfLink]++
 		name := r.Constraint.GetName()
 		namespace := r.Constraint.GetNamespace()
@@ -339,6 +348,9 @@ func (am *Manager) getUpdateListsFromAuditResponses(res []*constraintTypes.Resul
 		ea := util.EnforcementAction(enforcementAction)
 		totalViolationsPerEnforcementAction[ea]++
 		logViolation(am.log, r.Constraint, r.EnforcementAction, result)
+		if err := am.reporter.reportTotalViolationsDetailed(ea,constraintName,rnamespace,rname,rkind); err !=nil {
+			continue
+		}
 	}
 	// log constraints with violations
 	for link := range updateLists {

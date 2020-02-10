@@ -13,16 +13,22 @@ import (
 
 const (
 	violationsMetricName    = "violations"
+	violationsDetailedMetricName    = "violations_detailed"
 	auditDurationMetricName = "audit_duration_seconds"
 	lastRunTimeMetricName   = "audit_last_run_time"
 )
 
 var (
-	violationsM    = stats.Int64(violationsMetricName, "Total number of violations per constraint", stats.UnitDimensionless)
+	violationsM    = stats.Int64(violationsMetricName, "Total number of violations", stats.UnitDimensionless)
+	violationsDetailedM    = stats.Int64(violationsMetricName, "Total number of violations per constraint", stats.UnitDimensionless)
 	auditDurationM = stats.Float64(auditDurationMetricName, "Latency of audit operation in seconds", stats.UnitSeconds)
 	lastRunTimeM   = stats.Float64(lastRunTimeMetricName, "Timestamp of last audit run time", stats.UnitSeconds)
 
 	enforcementActionKey = tag.MustNewKey("enforcement_action")
+	kindKey = tag.MustNewKey("kind")
+	namespaceKey = tag.MustNewKey("namespace")
+	resourceNameKey = tag.MustNewKey("resource_name")
+	constraintKey = tag.MustNewKey("constraint")
 )
 
 func init() {
@@ -38,6 +44,12 @@ func register() error {
 			Measure:     violationsM,
 			Aggregation: view.LastValue(),
 			TagKeys:     []tag.Key{enforcementActionKey},
+		},
+		{
+			Name:        violationsDetailedMetricName,
+			Measure:     violationsDetailedM,
+			Aggregation: view.Count(),
+			TagKeys:     []tag.Key{constraintKey,enforcementActionKey,kindKey,namespaceKey,resourceNameKey},
 		},
 		{
 			Name:        auditDurationMetricName,
@@ -63,6 +75,22 @@ func (r *reporter) reportTotalViolations(enforcementAction util.EnforcementActio
 	}
 
 	return r.report(ctx, violationsM.M(v))
+}
+
+func (r *reporter) reportTotalViolationsDetailed(enforcementAction util.EnforcementAction,constraint,namespace,resourceName,kind string) error {
+	ctx, err := tag.New(
+		r.ctx,
+		tag.Insert(constraintKey, constraint),
+		tag.Insert(enforcementActionKey, string(enforcementAction)),
+		tag.Insert(kindKey, kind),
+		tag.Insert(namespaceKey, namespace),
+		tag.Insert(resourceNameKey, resourceName),
+		)
+	if err != nil {
+		return err
+	}
+
+	return r.report(ctx, violationsM.M(1))
 }
 
 func (r *reporter) reportLatency(d time.Duration) error {

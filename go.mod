@@ -11,6 +11,7 @@ require (
 	github.com/go-openapi/spec v0.19.4 // indirect
 	github.com/go-openapi/strfmt v0.19.3 // indirect
 	github.com/go-openapi/validate v0.19.4 // indirect
+	github.com/go-test/deep v1.0.5
 	github.com/google/go-cmp v0.3.1
 	github.com/onsi/ginkgo v1.10.1 // indirect
 	github.com/onsi/gomega v1.7.0
@@ -25,5 +26,4 @@ require (
 	k8s.io/apimachinery v0.16.4
 	k8s.io/client-go v0.16.4
 	sigs.k8s.io/controller-runtime v0.4.0
-	sigs.k8s.io/controller-tools v0.2.4 // indirect
 )

@@ -352,6 +352,10 @@ func (r *ReconcileConstraintTemplate) handleUpdate(
 		log.Error(err, "error adding template to watch registry")
 		return reconcile.Result{}, err
 	}
+	if found.Spec.PreserveUnknownFields == nil {
+		var trueBool bool = true
+		found.Spec.PreserveUnknownFields = &trueBool
+	}
 	if !reflect.DeepEqual(crd.Spec, found.Spec) {
 		log.Info("difference in spec found, updating")
 		found.Spec = crd.Spec

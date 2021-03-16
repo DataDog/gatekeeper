@@ -9,7 +9,7 @@ require (
 	github.com/go-logr/logr v0.3.0
 	github.com/go-logr/zapr v0.2.0
 	github.com/go-openapi/validate v0.20.2 // indirect
-	github.com/google/go-cmp v0.5.2
+	github.com/google/go-cmp v0.5.3
 	github.com/onsi/ginkgo v1.14.1
 	github.com/onsi/gomega v1.10.2
 	github.com/open-policy-agent/cert-controller v0.1.1-0.20210129015139-6ff9721a1c47
@@ -17,7 +17,7 @@ require (
 	github.com/open-policy-agent/opa v0.24.0
 	github.com/pkg/errors v0.9.1
 	github.com/prometheus/client_golang v1.7.1
-	go.opencensus.io v0.22.2
+	go.opencensus.io v0.23.0
 	go.uber.org/zap v1.15.0
 	golang.org/x/net v0.0.0-20210119194325-5f4716e94777
 	golang.org/x/sync v0.0.0-20200625203802-6e8e738ad208

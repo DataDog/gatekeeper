@@ -5,6 +5,7 @@ import (
 	"time"
 
 	"github.com/open-policy-agent/gatekeeper/pkg/metrics"
+	"go.opencensus.io/plugin/ochttp"
 	"go.opencensus.io/stats"
 	"go.opencensus.io/stats/view"
 	"go.opencensus.io/tag"
@@ -101,6 +102,12 @@ func (r *reporter) report(ctx context.Context, m stats.Measurement) error {
 
 func register() error {
 	views := []*view.View{
+		ochttp.ServerRequestCountView,
+		ochttp.ServerRequestBytesView,
+		ochttp.ServerResponseBytesView,
+		ochttp.ServerLatencyView,
+		ochttp.ServerRequestCountByMethod,
+		ochttp.ServerResponseCountByStatusCode,
 		{
 			Name:        requestCountMetricName,
 			Description: "The number of requests that are routed to validation webhook",

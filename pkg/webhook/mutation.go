@@ -26,6 +26,7 @@ import (
 	"github.com/open-policy-agent/gatekeeper/pkg/controller/config/process"
 	"github.com/open-policy-agent/gatekeeper/pkg/mutation"
 	"github.com/open-policy-agent/gatekeeper/pkg/util"
+	"go.opencensus.io/plugin/ochttp"
 	admissionv1 "k8s.io/api/admission/v1"
 	corev1 "k8s.io/api/core/v1"
 	k8serrors "k8s.io/apimachinery/pkg/api/errors"
@@ -90,7 +91,9 @@ func AddMutatingWebhook(mgr manager.Manager, client *opa.Client, processExcluder
 	if err := wh.InjectLogger(log); err != nil {
 		return err
 	}
-	mgr.GetWebhookServer().Register("/v1/mutate", wh)
+	mgr.GetWebhookServer().Register("/v1/mutate", &ochttp.Handler{
+		Handler: ochttp.WithRouteTag(wh, "/v1/mutate"),
+	})
 
 	return nil
 }

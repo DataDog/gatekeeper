@@ -11,6 +11,7 @@ import (
 	"github.com/open-policy-agent/gatekeeper/pkg/controller/config/process"
 	"github.com/open-policy-agent/gatekeeper/pkg/mutation"
 	"github.com/pkg/errors"
+	"go.opencensus.io/plugin/ochttp"
 	admissionv1 "k8s.io/api/admission/v1"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"sigs.k8s.io/controller-runtime/pkg/manager"
@@ -59,7 +60,9 @@ func AddLabelWebhook(mgr manager.Manager, _ *opa.Client, _ *process.Excluder, mu
 	if err := wh.InjectLogger(log); err != nil {
 		return err
 	}
-	mgr.GetWebhookServer().Register("/v1/admitlabel", wh)
+	mgr.GetWebhookServer().Register("/v1/admitlabel", &ochttp.Handler{
+		Handler: ochttp.WithRouteTag(wh, "/v1/admitlabel"),
+	})
 	return nil
 }
 

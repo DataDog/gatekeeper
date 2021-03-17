@@ -102,12 +102,41 @@ func (r *reporter) report(ctx context.Context, m stats.Measurement) error {
 
 func register() error {
 	views := []*view.View{
-		ochttp.ServerRequestCountView,
-		ochttp.ServerRequestBytesView,
-		ochttp.ServerResponseBytesView,
-		ochttp.ServerLatencyView,
-		ochttp.ServerRequestCountByMethod,
-		ochttp.ServerResponseCountByStatusCode,
+		&view.View{
+			Name:        "http/server/request_bytes",
+			Description: "Size distribution of HTTP request body by route and HTTP method",
+			Measure:     ochttp.ServerRequestBytes,
+			Aggregation: ochttp.DefaultSizeDistribution,
+			TagKeys:     []tag.Key{ochttp.KeyServerRoute, ochttp.Method},
+		},
+		&view.View{
+			Name:        "http/server/response_bytes",
+			Description: "Size distribution of HTTP response body by status code, HTTP method, and route",
+			Measure:     ochttp.ServerResponseBytes,
+			Aggregation: ochttp.DefaultSizeDistribution,
+			TagKeys:     []tag.Key{ochttp.KeyServerRoute, ochttp.StatusCode, ochttp.Method},
+		},
+		&view.View{
+			Name:        "http/server/latency",
+			Description: "Latency distribution of HTTP requests by status code, HTTP method, and route",
+			Measure:     ochttp.ServerLatency,
+			Aggregation: ochttp.DefaultLatencyDistribution,
+			TagKeys:     []tag.Key{ochttp.KeyServerRoute, ochttp.StatusCode, ochttp.Method},
+		},
+		&view.View{
+			Name:        "http/server/request_count",
+			Description: "Server request count by route and HTTP method",
+			TagKeys:     []tag.Key{ochttp.KeyServerRoute, ochttp.Method},
+			Measure:     ochttp.ServerRequestCount,
+			Aggregation: view.Count(),
+		},
+		&view.View{
+			Name:        "http/server/response_count",
+			Description: "Server response count by status code, HTTP method, and route",
+			TagKeys:     []tag.Key{ochttp.KeyServerRoute, ochttp.StatusCode, ochttp.Method},
+			Measure:     ochttp.ServerLatency,
+			Aggregation: view.Count(),
+		},
 		{
 			Name:        requestCountMetricName,
 			Description: "The number of requests that are routed to validation webhook",
